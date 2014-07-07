@@ -13,30 +13,37 @@ import (
 	"strings"
 )
 
-type UUID []byte
+type UUID string
 
-func New() (*UUID, error) {
+const (
+	EmptyUUID = UUID("00000000-0000-0000-0000-000000000000")
+)
+
+func New() UUID {
 	bt := make([]byte, 16)
 	n, err := rand.Read(bt)
 
 	if n != len(bt) || err != nil {
-		return nil, err
+		return EmptyUUID
 	}
 
 	// TODO: verify the two lines implement RFC 4122 correctly
 	bt[8] = 0x80 // variant bits see page 5
 	bt[4] = 0x40 // version 4 Pseudo Random, see page 7
 
-	uid := UUID(bt)
-
-	return &uid, nil
-}
-
-func (uuid *UUID) String() string {
-	bt := []byte(*uuid)
-	return strings.ToUpper(hex.EncodeToString(bt[:4]) + "-" +
+	s := strings.ToUpper(hex.EncodeToString(bt[:4]) + "-" +
 		hex.EncodeToString(bt[4:6]) + "-" +
 		hex.EncodeToString(bt[6:8]) + "-" +
 		hex.EncodeToString(bt[8:10]) + "-" +
 		hex.EncodeToString(bt[10:]))
+
+	return UUID(s)
+}
+
+func (uuid UUID) String() string {
+	return string(uuid)
+}
+
+func (uuid UUID) Decode() ([]byte, error) {
+	return hex.DecodeString(strings.Replace(strings.ToLower(uuid.String()), "-", "", -1))
 }

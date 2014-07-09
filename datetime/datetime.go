@@ -1,3 +1,4 @@
+// datetime - пакет для работы с датой в "паскалевском" формате
 package datetime
 
 import (
@@ -12,6 +13,7 @@ const (
 // формата "02.01.2006 15:04:05.000" ("dd.mm.yyyy hh:mm:ss.zzz")
 type DateTime string
 
+// String - поддержка для функций форматирования типа fmt.Printf()
 func (dt DateTime) String() string {
 	return string(dt)
 }

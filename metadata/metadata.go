@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"time"
 )
 
 func LoadJSON(data *os.File, elem interface{}) error {
@@ -21,20 +22,19 @@ func LoadGOB(data *os.File, elem interface{}) error {
 	return decoder.Decode(elem)
 }
 
-func LoadFile(filename string, elem interface{}) error {
+func LoadData(filename string, elem interface{}) error {
+	var data *os.File
+	var err error
+
 	if filename == "" {
-		return errors.New("LoadFile: Не задано имя файла")
+		return errors.New("LoadData: Не задано имя файла")
 	}	
 
-	_, errs := os.Stat(filename)
-
-	if errs != nil {
+	if _, errs := os.Stat(filename); errs != nil {
 		return errs
 	}	
 
-	data, err := os.Open(filename)
-
-	if err != nil {
+	if data, err = os.Open(filename); err != nil {
 		return err
 	}
 
@@ -50,9 +50,7 @@ func LoadFile(filename string, elem interface{}) error {
 		return err
 	}
 
-	err = data.Close()
-
-	return err
+	return data.Close()
 }
 
 func SaveJSON(data *os.File, elem interface{}) error {
@@ -65,24 +63,25 @@ func SaveGOB(data *os.File, elem interface{}) error {
 	return encoder.Encode(elem)
 }
 
-func SaveFile(filename string, elem interface{}) error {
+func SaveData(filename string, elem interface{}) error {
+	var filename_old string
+	var data *os.File
+	var err error
+
 	if filename == "" {
 		return errors.New("SaveFile: Не задано имя файла")
 	}	
 
-	_, errs := os.Stat(filename)
+	if _, errs := os.Stat(filename); errs == nil {
+		i := strings.LastIndex(filename, ".")
+		filename_old = filename[:i] + "_old" + filename[i:]
 
-	if errs == nil {
-		errs = os.Remove(filename)
-
-		if errs != nil {
+		if errs = os.Rename(filename, filename_old); errs != nil {
 			return errs
 		}
 	}	
 
-	data, err := os.Create(filename)
-
-	if err != nil {
+	if data, err = os.Create(filename); err != nil {
 		return err
 	}
 
@@ -98,90 +97,100 @@ func SaveFile(filename string, elem interface{}) error {
 		return err
 	}
 
-	err = data.Close()
+	if err = data.Close(); err == nil && filename_old != "" {
+		err = os.Remove(filename_old)
+	}
 
 	return err
-}
-
-type Lister interface {
-	GetMeta() *MetaInfo
-	Load(filename string) error
-	Save(filename string) error
-	IncLast()
-	ReCalc()
 }
 
 const (
 	MetaVersion = int16(1)
 )
 
-// MetaInfo - тип для хранения метаинформации о списке значений
-type MetaInfo struct {
-	Name    string
-	Version int16
-	Count   int64
-	Last    int64
+// HeaderInfo - тип для хранения информации о заголовке данных
+type HeaderInfo struct {
+	DataName  string
+	Version   int16
+	ItemCount int64
+	MaxUpdate int64
 }
 
-// MetaList - список значений типа MetaInfo
-type MetaList struct {
-	Meta  MetaInfo
-	Items []MetaInfo
+func (head *HeaderInfo) Copy() *HeaderInfo {
+	new_head := new(HeaderInfo)
+
+	new_head.DataName  = head.DataName
+	new_head.Version   = head.Version
+	new_head.ItemCount = head.ItemCount
+	new_head.MaxUpdate = head.MaxUpdate
+
+	return new_head
 }
 
-func (ml *MetaList) GetMeta() *MetaInfo {
-	return &ml.Meta
+func (head *HeaderInfo) UpdateVersion() *HeaderInfo {
+	head.Version = MetaVersion
+	return head
 }
 
-func (ml *MetaList) Load(filename string) error {
-	return LoadFile(filename, ml)
+// ItemInfo - тип для хранения информации о элементе данных
+type ItemInfo struct {
+	UID      uuid.UUID
+	Name     string
+	ShopUID  uuid.UUID
+	Shared   bool
+	TranTime datetime.DateTime
+	Update   int64
 }
 
-func (ml *MetaList) Save(filename string) error {
-	return SaveFile(filename, ml)
+func (item *ItemInfo) Copy() *ItemInfo {
+	new_item := new(ItemInfo)
+
+	new_item.UID      = item.UID
+	new_item.Name     = item.Name
+	new_item.ShopUID  = item.ShopUID
+	new_item.Shared   = item.Shared
+	new_item.TranTime = item.TranTime
+	new_item.Update   = item.Update
+
+	return new_item
 }
 
-func (ml *MetaList) IncLast() {
-	ml.Meta.Last++
+func (item *ItemInfo) GenUID() *ItemInfo {
+	item.UID = uuid.New()
+	return item
 }
 
-func (ml *MetaList) ReCalc() {
-	ml.Meta.Version = MetaVersion
-	ml.Meta.Count = int64(len(ml.Items))
+func (item *ItemInfo) UpdateTranTime() *ItemInfo {
+	item.TranTime = datetime.EncodeTime(time.Now())
+	return item
+}
+
+func (item *ItemInfo) IncUpdate() *ItemInfo {
+	item.Update++
+	return item
 }
 
 // Shop - структура "Магазин"
 type Shop struct {
-	UID         uuid.UUID
-	Name        string
+	ItemInfo
 	Description string
 }
 
-// ShopList - список значений типа Shop
-type ShopList struct {
-	Meta  MetaInfo
+// ShopData - данные о магазинах
+type ShopData struct {
+	HeaderInfo
 	Items []Shop
-}
-
-// Tran - структура "Транзакция"
-type Tran struct {
-	ShopUID    uuid.UUID
-	TranTime   datetime.DateTime
-	PackageUID uuid.UUID
 }
 
 // Goods - структура "Товар"
 type Goods struct {
-	UID       uuid.UUID
+	ItemInfo
 	Article   string
 	ShortName string
-	Name      string
-	Shared    bool
-	TranInfo  Tran
 }
 
-// GoodsList - список значений типа Goods
+// GoodsData - данные о товарах
 type GoodsList struct {
-	Meta  MetaInfo
+	HeaderInfo
 	Items []Goods
 }

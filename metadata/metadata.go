@@ -105,14 +105,14 @@ func SaveData(filename string, elem interface{}) error {
 }
 
 const (
-	MetaVersion = int16(1)
+	MetaVersion int16 = 1
 )
 
 // HeaderInfo - тип для хранения информации о заголовке данных
 type HeaderInfo struct {
 	DataName  string
 	Version   int16
-	ItemCount int64
+	ItemCount int
 	MaxUpdate int64
 }
 
@@ -190,7 +190,7 @@ type Goods struct {
 }
 
 // GoodsData - данные о товарах
-type GoodsList struct {
+type GoodsData struct {
 	HeaderInfo
 	Items []Goods
 }

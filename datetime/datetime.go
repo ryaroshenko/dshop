@@ -23,7 +23,7 @@ func (dt DateTime) Decode() (time.Time, error) {
 	return time.Parse(DateTimeFormat, string(dt))
 }
 
-// EncodeTime - функция кодирования значения time.Time в тип dshop.datetime.DateTime
+// EncodeTime - функция кодирования значения time.Time в тип datetime.DateTime
 func EncodeTime(t time.Time) DateTime {
 	return DateTime(t.Format(DateTimeFormat))
 }

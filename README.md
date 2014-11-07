@@ -7,7 +7,7 @@ datetime.go - пакет для работы с датой в "паскалев�
 Installation
 -------------
 
-   $ go get github.com/ryaroshenko/rpkg
+$ go get github.com/ryaroshenko/rpkg
 
 Example
 --------
@@ -22,14 +22,6 @@ import (
 )
 
 func main() {
-	l := "02.01.2006 15:04:05.000"
-	t, err := time.Parse(l, "30.06.2014 13:15:28.937")
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println(t.Format(l))
-	}
-
 	t = time.Now()
 	dt := datetime.EncodeTime(t)
 	fmt.Printf("Дата+Время = %s\n", dt)

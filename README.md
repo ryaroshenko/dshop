@@ -7,30 +7,34 @@ datetime.go - пакет для работы с датой в "паскалев�
 Installation
 -------------
 
-$ go get github.com/ryaroshenko/rpkg
+::
+
+  $ go get github.com/ryaroshenko/rpkg
 
 Example
 --------
 
-package main
+::
 
-import (
-	"fmt"
-	"github.com/ryaroshenko/rpkg/datetime"
-	"github.com/ryaroshenko/rpkg/uuid"
-	"time"
-)
+  package main
 
-func main() {
-	t = time.Now()
-	dt := datetime.EncodeTime(t)
-	fmt.Printf("Дата+Время = %s\n", dt)
+  import (
+    "fmt"
+    "github.com/ryaroshenko/rpkg/datetime"
+    "github.com/ryaroshenko/rpkg/uuid"
+    "time"
+  )
 
-	dt = "30.06.2014 14:56:43.024"
-	t, err = dt.Decode()
-	fmt.Printf("Время = %s\n", t)
+  func main() {
+    t = time.Now()
+    dt := datetime.EncodeTime(t)
+    fmt.Printf("Дата+Время = %s\n", dt)
 
-	fmt.Printf("UUID = %s\n", uuid.New())
-}
+    dt = "30.06.2014 14:56:43.024"
+    t, err = dt.Decode()
+    fmt.Printf("Время = %s\n", t)
+
+    fmt.Printf("UUID = %s\n", uuid.New())
+  }
 
 See also uuid_test.go

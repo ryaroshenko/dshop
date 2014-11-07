@@ -25,6 +25,7 @@ func main() {
 	t = time.Now()
 	dt := datetime.EncodeTime(t)
 	fmt.Printf("Дата+Время = %s\n", dt)
+
 	dt = "30.06.2014 14:56:43.024"
 	t, err = dt.Decode()
 	fmt.Printf("Время = %s\n", t)

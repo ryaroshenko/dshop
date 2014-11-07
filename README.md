@@ -7,14 +7,10 @@ datetime.go - пакет для работы с датой в "паскалев�
 Installation
 -------------
 
-::
-
   $ go get github.com/ryaroshenko/rpkg
 
 Example
 --------
-
-::
 
   package main
 
